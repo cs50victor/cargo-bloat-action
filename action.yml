@@ -8,6 +8,9 @@ inputs:
   token:
     description: 'Github token to use'
     required: true
+  kv_token:
+    description: 'Kv token to use - saving snapshots'
+    required: true
   bloat_args:
     description: 'Custom arguments to pass to cargo bloat'
     required: false
@@ -21,5 +24,5 @@ inputs:
     description: 'Packages to exclude from running cargo bloat onto.'
     required: false
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/index.js'
