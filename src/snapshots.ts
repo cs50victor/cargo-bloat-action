@@ -137,7 +137,8 @@ export function compareSnapshots(packageName: string, masterCommit: string | nul
 
 export async function fetchSnapshot(axios: AxiosInstance, repo: string, toolchain: string): Promise<Snapshot | null> {
   const key = snapshotKey(repo, toolchain);
-  const res = await axios.get(`/get/${key}`);
+  core.info(`Fetching snapshot for ${key}`);
+  const res = await axios.get(`/get/${key}-main`);
   core.info(`Response: ${JSON.stringify(res.data)}`);
   return (res?.data as Snapshot) ?? null;
 }

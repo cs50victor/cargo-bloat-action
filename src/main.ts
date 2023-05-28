@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import { compareSnapshots, Snapshot, fetchSnapshot, recordSnapshot } from "./snapshots";
+import { compareSnapshots, Snapshot, fetchSnapshot as fetchMainBranchSnapshot, recordSnapshot } from "./snapshots";
 import { BloatOutput, CargoPackage, getCargoPackages, getToolchainVersions, installCargoDependencies, Package, runCargoBloat, runCargoTree, Versions } from "./bloat";
 // import {createOrUpdateComment, createSnapshotComment} from './comments'
 import * as io from "@actions/io";
@@ -9,7 +9,7 @@ import { createComment, createOrUpdateComment, createSnapshotComment } from "./c
 
 const ALLOWED_EVENTS = ["pull_request", "push"];
 
-const KV_URL = "https://known-crane-36141.kv.vercel-storage.com";
+const KV_URL = "https://known-crane-36141.kv.vercel-storage.com/";
 
 async function run(): Promise<void> {
   if (!ALLOWED_EVENTS.includes(github.context.eventName)) {
@@ -60,6 +60,8 @@ async function run(): Promise<void> {
     },
   });
 
+  core.info(`GITHUB CONTEXT REF: ${github.context.ref}`);
+  
   if (github.context.eventName == "push") {
     // Record the results
     return await core.group("Recording", async () => {
@@ -69,8 +71,9 @@ async function run(): Promise<void> {
 
   // A merge request
   const masterSnapshot = await core.group("Fetching last build", async (): Promise<Snapshot | null> => {
-    return await fetchSnapshot(_axios, repo_path, versions.toolchain);
+    return await fetchMainBranchSnapshot(_axios, repo_path, versions.toolchain);
   });
+
   await core.group("Posting comment", async (): Promise<void> => {
     const masterCommit = masterSnapshot?.commit || null;
     const snapShotDiffs = Object.entries(currentSnapshot.packages).map((obj) => {

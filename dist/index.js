@@ -37318,7 +37318,8 @@ function compareSnapshots(packageName, masterCommit, current, master) {
 async function fetchSnapshot(axios, repo, toolchain) {
     var _a;
     const key = snapshotKey(repo, toolchain);
-    const res = await axios.get(`/get/${key}`);
+    core.info(`Fetching snapshot for ${key}`);
+    const res = await axios.get(`/get/${key}-main`);
     core.info(`Response: ${JSON.stringify(res.data)}`);
     return (_a = res === null || res === void 0 ? void 0 : res.data) !== null && _a !== void 0 ? _a : null;
 }
@@ -37604,7 +37605,7 @@ ${comment}
 
 
 const ALLOWED_EVENTS = ["pull_request", "push"];
-const KV_URL = "https://known-crane-36141.kv.vercel-storage.com";
+const KV_URL = "https://known-crane-36141.kv.vercel-storage.com/";
 async function run() {
     if (!ALLOWED_EVENTS.includes(github.context.eventName)) {
         core.setFailed(`This can only be used with the following events: ${ALLOWED_EVENTS.join(", ")}`);
@@ -37644,6 +37645,7 @@ async function run() {
             Authorization: `Bearer ${core.getInput("kv_token")}`,
         },
     });
+    core.info(`GITHUB CONTEXT REF: ${github.context.ref}`);
     if (github.context.eventName == "push") {
         // Record the results
         return await core.group("Recording", async () => {
