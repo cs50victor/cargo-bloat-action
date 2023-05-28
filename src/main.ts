@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import { compareSnapshots, Snapshot, fetchSnapshot as fetchMainBranchSnapshot, recordSnapshot } from "./snapshots";
+import { compareSnapshots, Snapshot, getMasterBranchSnapshot, saveSnapshot } from "./snapshots";
 import { BloatOutput, CargoPackage, getCargoPackages, getToolchainVersions, installCargoDependencies, Package, runCargoBloat, runCargoTree, Versions } from "./bloat";
 // import {createOrUpdateComment, createSnapshotComment} from './comments'
 import * as io from "@actions/io";
@@ -16,6 +16,12 @@ async function run(): Promise<void> {
     core.setFailed(`This can only be used with the following events: ${ALLOWED_EVENTS.join(", ")}`);
     return;
   }
+
+  const repo_name = github.context.repo.repo;
+  const ref = github.context.ref.replace(/\//g, "_");
+  const is_default_branch = !ref.includes("pull");
+
+  core.info(`GITHUB CONTEXT REF: ${ref} | IS DEFAULT BRANCH: ${is_default_branch}`);
 
   const cargoPath: string = await io.which("cargo", true);
 
@@ -43,8 +49,6 @@ async function run(): Promise<void> {
     packageData[cargoPackage.name] = { bloat: bloatData, tree: treeData };
   }
 
-  const repo_path = `${github.context.repo.owner}/${github.context.repo.repo}`;
-
   const currentSnapshot: Snapshot = {
     commit: github.context.sha,
     toolchain: versions.toolchain,
@@ -59,19 +63,16 @@ async function run(): Promise<void> {
       Authorization: `Bearer ${core.getInput("kv_token")}`,
     },
   });
-
-  core.info(`GITHUB CONTEXT REF: ${github.context.ref}`);
   
   if (github.context.eventName == "push") {
-    // Record the results
-    return await core.group("Recording", async () => {
-      return await recordSnapshot(_axios, repo_path, currentSnapshot);
+    return await core.group("Saving Snapshot", async () => {
+      return await saveSnapshot(_axios, repo_name, currentSnapshot, ref, is_default_branch);
     });
   }
 
   // A merge request
   const masterSnapshot = await core.group("Fetching last build", async (): Promise<Snapshot | null> => {
-    return await fetchMainBranchSnapshot(_axios, repo_path, versions.toolchain);
+    return await getMasterBranchSnapshot(_axios, repo_name, versions.toolchain, ref, is_default_branch);
   });
 
   await core.group("Posting comment", async (): Promise<void> => {
@@ -85,6 +86,7 @@ async function run(): Promise<void> {
     await createOrUpdateComment(versions.toolchain, comment);
   });
 }
+
 
 async function main(): Promise<void> {
   try {

@@ -37315,20 +37315,22 @@ function compareSnapshots(packageName, masterCommit, current, master) {
         oldDependenciesCount,
     };
 }
-async function fetchSnapshot(axios, repo, toolchain) {
+async function getMasterBranchSnapshot(axios, repo_name, toolchain, ref, is_default_branch) {
     var _a;
-    const key = snapshotKey(repo, toolchain);
-    core.info(`Fetching snapshot for ${key}`);
+    const key = snapshotKey(repo_name, toolchain) + suffix(is_default_branch, ref);
+    core.info(`Fetching snapshot with key - ${key}`);
     const res = await axios.get(`/get/${key}-main`);
     core.info(`Response: ${JSON.stringify(res.data)}`);
     return (_a = res === null || res === void 0 ? void 0 : res.data) !== null && _a !== void 0 ? _a : null;
 }
-async function recordSnapshot(axios, repo, snapshot) {
+async function saveSnapshot(axios, repo_name, snapshot, ref, is_default_branch) {
     core.info(`Post data: ${JSON.stringify(snapshot, undefined, 2)}`);
-    const key = snapshotKey(repo, snapshot.toolchain);
+    const key = snapshotKey(repo_name, snapshot.toolchain) + suffix(is_default_branch, ref);
+    core.info(`Saving snapshot with key - ${key}`);
     await axios.post(`/set/${key}`, snapshot);
 }
-const snapshotKey = (repo, toolchain) => `${repo}-${toolchain}`;
+const snapshotKey = (repo_name, toolchain) => `${repo_name}-${toolchain}`;
+const suffix = (is_default_branch, ref) => (is_default_branch ? "-main" : `-${ref}`);
 
 ;// CONCATENATED MODULE: ./lib/bloat.js
 
@@ -37612,6 +37614,10 @@ async function run() {
         core.setFailed(`This can only be used with the following events: ${ALLOWED_EVENTS.join(", ")}`);
         return;
     }
+    const repo_name = github.context.repo.repo;
+    const ref = github.context.ref.replace(/\//g, "_");
+    const is_default_branch = !ref.includes("pull");
+    core.info(`GITHUB CONTEXT REF: ${ref} | IS DEFAULT BRANCH: ${is_default_branch}`);
     const cargoPath = await io.which("cargo", true);
     await core.group("Installing cargo dependencies", async () => {
         await installCargoDependencies(cargoPath);
@@ -37632,7 +37638,6 @@ async function run() {
         });
         packageData[cargoPackage.name] = { bloat: bloatData, tree: treeData };
     }
-    const repo_path = `${github.context.repo.owner}/${github.context.repo.repo}`;
     const currentSnapshot = {
         commit: github.context.sha,
         toolchain: versions.toolchain,
@@ -37646,16 +37651,14 @@ async function run() {
             Authorization: `Bearer ${core.getInput("kv_token")}`,
         },
     });
-    core.info(`GITHUB CONTEXT REF: ${github.context.ref}`);
     if (github.context.eventName == "push") {
-        // Record the results
-        return await core.group("Recording", async () => {
-            return await recordSnapshot(_axios, repo_path, currentSnapshot);
+        return await core.group("Saving Snapshot", async () => {
+            return await saveSnapshot(_axios, repo_name, currentSnapshot, ref, is_default_branch);
         });
     }
     // A merge request
     const masterSnapshot = await core.group("Fetching last build", async () => {
-        return await fetchSnapshot(_axios, repo_path, versions.toolchain);
+        return await getMasterBranchSnapshot(_axios, repo_name, versions.toolchain, ref, is_default_branch);
     });
     await core.group("Posting comment", async () => {
         const masterCommit = (masterSnapshot === null || masterSnapshot === void 0 ? void 0 : masterSnapshot.commit) || null;
