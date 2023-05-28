@@ -37350,7 +37350,8 @@ async function installCargoDependencies(cargoPath) {
 }
 async function runCargoBloat(cargoPath, packageName) {
     const noCrates = core.getInput("by_function");
-    const flags = ["--release", "--all-features"];
+    // const flags = ["--release", "--all-features"];
+    const flags = ["--all-features"];
     if (!noCrates) {
         flags.push("--crates");
     }
