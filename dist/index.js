@@ -37315,11 +37315,11 @@ function compareSnapshots(packageName, masterCommit, current, master) {
         oldDependenciesCount,
     };
 }
-async function getMasterBranchSnapshot(axios, repo_name, toolchain, ref, is_default_branch) {
+async function getMasterBranchSnapshot(axios, repo_name, toolchain) {
     var _a;
-    const key = snapshotKey(repo_name, toolchain) + suffix(is_default_branch, ref);
+    const key = snapshotKey(repo_name, toolchain) + suffix(true, "ref");
     core.info(`Fetching snapshot with key - ${key}`);
-    const res = await axios.get(`/get/${key}-main`);
+    const res = await axios.get(`/get/${key}`);
     core.info(`Response: ${JSON.stringify(res.data)}`);
     return (_a = res === null || res === void 0 ? void 0 : res.data) !== null && _a !== void 0 ? _a : null;
 }
@@ -37618,6 +37618,7 @@ async function run() {
     const ref = github.context.ref.replace(/\//g, "_");
     const is_default_branch = !ref.includes("pull") && (ref.includes("main") || ref.includes("master"));
     core.info(`GITHUB CONTEXT REF: ${ref} | IS DEFAULT BRANCH: ${is_default_branch}`);
+    core.info(`github.context.eventName : ${github.context.eventName}`);
     const cargoPath = await io.which("cargo", true);
     await core.group("Installing cargo dependencies", async () => {
         await installCargoDependencies(cargoPath);
@@ -37658,7 +37659,7 @@ async function run() {
     }
     // A merge request
     const masterSnapshot = await core.group("Fetching last build", async () => {
-        return await getMasterBranchSnapshot(_axios, repo_name, versions.toolchain, ref, is_default_branch);
+        return await getMasterBranchSnapshot(_axios, repo_name, versions.toolchain);
     });
     await core.group("Posting comment", async () => {
         const masterCommit = (masterSnapshot === null || masterSnapshot === void 0 ? void 0 : masterSnapshot.commit) || null;
@@ -37667,7 +37668,7 @@ async function run() {
             const [name, currentPackage] = obj;
             return compareSnapshots(name, masterCommit, currentPackage, ((_a = masterSnapshot === null || masterSnapshot === void 0 ? void 0 : masterSnapshot.packages) === null || _a === void 0 ? void 0 : _a[name]) || null);
         });
-        core.info(`snapshot: ${JSON.stringify(snapShotDiffs, undefined, 2)}`);
+        core.info('..creating comment');
         const comment = createComment(masterCommit, currentSnapshot.commit, versions.toolchain, snapShotDiffs);
         await createOrUpdateComment(versions.toolchain, comment);
     });

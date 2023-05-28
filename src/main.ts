@@ -22,6 +22,7 @@ async function run(): Promise<void> {
   const is_default_branch = !ref.includes("pull") && (ref.includes("main") || ref.includes("master"));
 
   core.info(`GITHUB CONTEXT REF: ${ref} | IS DEFAULT BRANCH: ${is_default_branch}`);
+  core.info(`github.context.eventName : ${github.context.eventName}`);
 
   const cargoPath: string = await io.which("cargo", true);
 
@@ -63,7 +64,7 @@ async function run(): Promise<void> {
       Authorization: `Bearer ${core.getInput("kv_token")}`,
     },
   });
-  
+
   if (github.context.eventName == "push") {
     return await core.group("Saving Snapshot", async () => {
       return await saveSnapshot(_axios, repo_name, currentSnapshot, ref, is_default_branch);
@@ -72,7 +73,7 @@ async function run(): Promise<void> {
 
   // A merge request
   const masterSnapshot = await core.group("Fetching last build", async (): Promise<Snapshot | null> => {
-    return await getMasterBranchSnapshot(_axios, repo_name, versions.toolchain, ref, is_default_branch);
+    return await getMasterBranchSnapshot(_axios, repo_name, versions.toolchain);
   });
 
   await core.group("Posting comment", async (): Promise<void> => {
@@ -81,12 +82,11 @@ async function run(): Promise<void> {
       const [name, currentPackage] = obj;
       return compareSnapshots(name, masterCommit, currentPackage, masterSnapshot?.packages?.[name] || null);
     });
-    core.info(`snapshot: ${JSON.stringify(snapShotDiffs, undefined, 2)}`);
+    core.info('..creating comment');
     const comment = createComment(masterCommit, currentSnapshot.commit, versions.toolchain, snapShotDiffs);
     await createOrUpdateComment(versions.toolchain, comment);
   });
 }
-
 
 async function main(): Promise<void> {
   try {

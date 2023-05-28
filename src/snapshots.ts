@@ -135,17 +135,17 @@ export function compareSnapshots(packageName: string, masterCommit: string | nul
   };
 }
 
-export async function getMasterBranchSnapshot(axios: AxiosInstance, repo_name: string, toolchain: string, ref: string, is_default_branch: boolean): Promise<Snapshot | null> {
-  const key = snapshotKey(repo_name, toolchain)+suffix(is_default_branch, ref);
+export async function getMasterBranchSnapshot(axios: AxiosInstance, repo_name: string, toolchain: string): Promise<Snapshot | null> {
+  const key = snapshotKey(repo_name, toolchain) + suffix(true, "ref");
   core.info(`Fetching snapshot with key - ${key}`);
-  const res = await axios.get(`/get/${key}-main`);
+  const res = await axios.get(`/get/${key}`);
   core.info(`Response: ${JSON.stringify(res.data)}`);
   return (res?.data as Snapshot) ?? null;
 }
 
 export async function saveSnapshot(axios: AxiosInstance, repo_name: string, snapshot: Snapshot, ref: string, is_default_branch: boolean): Promise<void> {
   core.info(`Post data: ${JSON.stringify(snapshot, undefined, 2)}`);
-  const key = snapshotKey(repo_name, snapshot.toolchain)+suffix(is_default_branch, ref);
+  const key = snapshotKey(repo_name, snapshot.toolchain) + suffix(is_default_branch, ref);
   core.info(`Saving snapshot with key - ${key}`);
   await axios.post(`/set/${key}`, snapshot);
 }
