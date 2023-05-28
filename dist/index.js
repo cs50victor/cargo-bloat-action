@@ -37616,7 +37616,7 @@ async function run() {
     }
     const repo_name = github.context.repo.repo;
     const ref = github.context.ref.replace(/\//g, "_");
-    const is_default_branch = !ref.includes("pull");
+    const is_default_branch = !ref.includes("pull") && (ref.includes("main") || ref.includes("master"));
     core.info(`GITHUB CONTEXT REF: ${ref} | IS DEFAULT BRANCH: ${is_default_branch}`);
     const cargoPath = await io.which("cargo", true);
     await core.group("Installing cargo dependencies", async () => {

@@ -19,7 +19,7 @@ async function run(): Promise<void> {
 
   const repo_name = github.context.repo.repo;
   const ref = github.context.ref.replace(/\//g, "_");
-  const is_default_branch = !ref.includes("pull");
+  const is_default_branch = !ref.includes("pull") && (ref.includes("main") || ref.includes("master"));
 
   core.info(`GITHUB CONTEXT REF: ${ref} | IS DEFAULT BRANCH: ${is_default_branch}`);
 
