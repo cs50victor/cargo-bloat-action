@@ -18360,12 +18360,12 @@ function compareSnapshots(packageName, masterCommit, current, master) {
     };
 }
 async function getMasterBranchSnapshot(axios, repo_name, toolchain) {
-    var _a;
+    var _a, _b;
     const key = snapshotKey(repo_name, toolchain) + suffix(true, "ref");
     core.info(`Fetching snapshot with key - ${key}`);
     const res = await axios.get(`/get/${key}`);
     core.info(`Response: ${JSON.stringify(res.data)}`);
-    return (_a = res === null || res === void 0 ? void 0 : res.data) !== null && _a !== void 0 ? _a : null;
+    return (_b = (_a = res === null || res === void 0 ? void 0 : res.data) === null || _a === void 0 ? void 0 : _a.result) !== null && _b !== void 0 ? _b : null;
 }
 async function saveSnapshot(axios, repo_name, snapshot, ref, is_default_branch) {
     const key = snapshotKey(repo_name, snapshot.toolchain) + suffix(is_default_branch, ref);

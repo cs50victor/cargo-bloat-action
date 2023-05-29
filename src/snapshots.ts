@@ -127,7 +127,7 @@ export async function getMasterBranchSnapshot(axios: AxiosInstance, repo_name: s
   core.info(`Fetching snapshot with key - ${key}`);
   const res = await axios.get(`/get/${key}`);
   core.info(`Response: ${JSON.stringify(res.data)}`);
-  return (res?.data as Snapshot) ?? null;
+  return (res?.data?.result as Snapshot) ?? null;
 }
 
 export async function saveSnapshot(axios: AxiosInstance, repo_name: string, snapshot: Snapshot, ref: string, is_default_branch: boolean): Promise<void> {
