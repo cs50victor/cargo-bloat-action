@@ -3,7 +3,7 @@ import { context } from "@actions/github";
 import * as Diff from "diff";
 import { Change } from "diff";
 import { Package } from "./bloat";
-import { shouldIncludeInDiff, treeToDisplay } from "./utils";
+import { shouldIncludeInDiff } from "./utils";
 import { AxiosInstance } from "axios";
 
 declare interface CrateDifference {
@@ -30,10 +30,6 @@ export declare interface SnapshotDifference {
   currentCommit: string;
 
   crateDifference: Array<CrateDifference>;
-
-  treeDiff: Change[] | string;
-  oldDependenciesCount: number;
-  newDependenciesCount: number;
 }
 
 export declare interface Crate {
@@ -112,12 +108,6 @@ export function compareSnapshots(packageName: string, masterCommit: string | nul
   const oldSize = masterFileSize;
   const oldTextSize = masterTextSize;
 
-  const treeDiff = master?.tree && master.tree !== current.tree ? Diff.diffLines(treeToDisplay(master.tree), treeToDisplay(current.tree)) : treeToDisplay(current.tree);
-  // Diff.structuredPatch("master", "branch", treeToDisplay(master.tree), treeToDisplay(current.tree), "", "", {}).hunks : treeToDisplay(current.tree)
-
-  const oldDependenciesCount = master?.tree.split("\n").length || 0;
-  const newDependenciesCount = current.tree.split("\n").length;
-
   return {
     packageName,
     sizeDifference,
@@ -129,9 +119,6 @@ export function compareSnapshots(packageName: string, masterCommit: string | nul
     oldTextSize,
     masterCommit,
     currentCommit: context.sha,
-    treeDiff,
-    newDependenciesCount,
-    oldDependenciesCount,
   };
 }
 
@@ -139,12 +126,11 @@ export async function getMasterBranchSnapshot(axios: AxiosInstance, repo_name: s
   const key = snapshotKey(repo_name, toolchain) + suffix(true, "ref");
   core.info(`Fetching snapshot with key - ${key}`);
   const res = await axios.get(`/get/${key}`);
-  core.info(`Response: ${JSON.stringify(res.data)}`);
-  return (res?.data as Snapshot) ?? null;
+  core.info(`Response: ${JSON.stringify(res.data.result, null, 2)}`);
+  return (JSON.parse(res?.data?.result) as Snapshot) ?? null;
 }
 
 export async function saveSnapshot(axios: AxiosInstance, repo_name: string, snapshot: Snapshot, ref: string, is_default_branch: boolean): Promise<void> {
-  core.info(`Post data: ${JSON.stringify(snapshot, undefined, 2)}`);
   const key = snapshotKey(repo_name, snapshot.toolchain) + suffix(is_default_branch, ref);
   core.info(`Saving snapshot with key - ${key}`);
   await axios.post(`/set/${key}`, snapshot);

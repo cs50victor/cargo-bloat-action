@@ -35,8 +35,7 @@
     "diff": "^5.1.0",
     "filesize": "^10.0.7",
     "lodash": "^4.17.21",
-    "text-table": "^0.2.0",
-    "treeify": "^1.1.0"
+    "text-table": "^0.2.0"
   },
   "devDependencies": {
     "@types/diff": "^5.0.3",
@@ -45,7 +44,6 @@
     "@types/lodash": "^4.14.195",
     "@types/node": "^16.18.34",
     "@types/text-table": "^0.2.2",
-    "@types/treeify": "^1.0.0",
     "@vercel/ncc": "^0.36.1",
     "js-yaml": "^4.1.0",
     "pre-commit": "^1.2.2",

@@ -1,45 +1,6 @@
 import { set } from "lodash";
-import { asTree } from "treeify";
 import { ExecOptions } from "@actions/exec/lib/interfaces";
 import * as exec from "@actions/exec";
-
-export function treeToDisplay(tree: string): string {
-  // The syntax looks like this:
-  // 1serde v1.0.104
-  // 2itoa v0.4.5 (*)
-  // 1another v1.2.3
-  // And we need to construct a tree object that looks like
-  // {
-  //   'serde v1.0.104': {
-  //       'iota v0.4.5': null
-  //   },
-  //   'another v1.2.3': null
-  // }
-
-  const treeObject = {};
-  const currentKeyPath: Array<string> = [];
-
-  tree.split("\n").forEach((line) => {
-    const found = line.match(/^(\d+)(.*)?/);
-    if (found == null) {
-      return;
-    }
-    const indent = parseInt(found[1], 10) - 1;
-    const ourKey = found[2].replace("(*)", "");
-
-    if (indent + 1 > currentKeyPath.length) {
-      currentKeyPath.push(ourKey);
-    } else {
-      while (indent < currentKeyPath.length) {
-        currentKeyPath.pop();
-      }
-      currentKeyPath.push(ourKey);
-    }
-    set(treeObject, currentKeyPath, null);
-  });
-
-  return asTree(treeObject, false, true);
-}
 
 export function shouldIncludeInDiff(newValue: number, oldValue: number | null): boolean {
   const changedThreshold = 4000;

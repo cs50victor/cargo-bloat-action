@@ -5,10 +5,14 @@ your total binary size, how much each crate contributes to that size and a list 
 
 **Table of Contents**
 
-* [Example workflow](#example-workflow)
-* [Screenshots](#screenshots)
-* [Why?](#why)
-* [Contribute](#contribute)
+- [Cargo Bloat Action :rocket:](#cargo-bloat-action-rocket)
+  - [Example Workflow](#example-workflow)
+  - [Options](#options)
+  - [Screenshots](#screenshots)
+    - [Total size change](#total-size-change)
+    - [Size difference per crate](#size-difference-per-crate)
+  - [Why?](#why)
+  - [Contribute](#contribute)
 
 ## Example Workflow
 
@@ -43,7 +47,6 @@ jobs:
 
 * `by_function` - Display per-function bloat instead of per-crate bloat
 * `bloat_args` - Custom arguments to pass to `cargo bloat`
-* `tree_args` - Custom arguments to pass to `cargo tree`
 * `exclude_packages` - packages to exclude from running `cargo bloat` on (useful for projects unsupported by cargo bloat such as static libraries).
 
 ## Screenshots
@@ -55,10 +58,6 @@ jobs:
 ### Size difference per crate
 
 ![](./images/breakdown.png)
-
-### Changes in your dependency tree (`cargo tree`)
-
-![](./images/dependencies.png)
 
 ## Why?
 
