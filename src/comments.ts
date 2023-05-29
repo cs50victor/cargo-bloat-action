@@ -15,7 +15,7 @@ export function githubClient() {
 
 async function postNewComment(message: string, client: ReturnType<typeof githubClient>): Promise<void> {
   await client.rest.issues.createComment({
-    body: message,
+    body: validateMsg(message),
     issue_number: context.issue.number,
     owner: context.issue.owner,
     repo: context.issue.repo,
@@ -24,7 +24,7 @@ async function postNewComment(message: string, client: ReturnType<typeof githubC
 
 async function updateComment(message: string, comment_id: number, client: ReturnType<typeof githubClient>): Promise<void> {
   await client.rest.issues.updateComment({
-    body: message,
+    body: validateMsg(message),
     comment_id,
     owner: context.issue.owner,
     repo: context.issue.repo,
@@ -225,4 +225,12 @@ ${comment}
 
   Commit: ${currentCommit} ${compareCommitText}
   `;
+}
+
+const validateMsg= (msg: string) => {
+  // 65536 is the max length of a comment
+  if (msg.length > 65536) {
+    return msg.slice(0, 65536);
+  }
+  return msg;
 }

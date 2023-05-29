@@ -66,7 +66,7 @@ export async function runCargoBloat(cargoPath: string, packageName: string): Pro
   if (optionalArgs.length > 0) {
     bloatArgs = ["bloat", ...optionalArgs.split(" ")];
   }
-  bloatArgs.push("--message-format=json", "-n", "0");
+  bloatArgs.push("--message-format=json", "-n", "20");
   const output = await captureOutput(cargoPath, bloatArgs);
   return JSON.parse(output);
 }

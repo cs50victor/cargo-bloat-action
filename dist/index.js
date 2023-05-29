@@ -37362,7 +37362,7 @@ async function runCargoBloat(cargoPath, packageName) {
     if (optionalArgs.length > 0) {
         bloatArgs = ["bloat", ...optionalArgs.split(" ")];
     }
-    bloatArgs.push("--message-format=json", "-n", "0");
+    bloatArgs.push("--message-format=json", "-n", "20");
     const output = await captureOutput(cargoPath, bloatArgs);
     return JSON.parse(output);
 }
@@ -37405,7 +37405,7 @@ function githubClient() {
 }
 async function postNewComment(message, client) {
     await client.rest.issues.createComment({
-        body: message,
+        body: validateMsg(message),
         issue_number: github.context.issue.number,
         owner: github.context.issue.owner,
         repo: github.context.issue.repo,
@@ -37413,7 +37413,7 @@ async function postNewComment(message, client) {
 }
 async function updateComment(message, comment_id, client) {
     await client.rest.issues.updateComment({
-        body: message,
+        body: validateMsg(message),
         comment_id,
         owner: github.context.issue.owner,
         repo: github.context.issue.repo,
@@ -37597,6 +37597,13 @@ ${comment}
   Commit: ${currentCommit} ${compareCommitText}
   `;
 }
+const validateMsg = (msg) => {
+    // 65536 is the max length of a comment
+    if (msg.length > 65536) {
+        return msg.slice(0, 65536);
+    }
+    return msg;
+};
 
 ;// CONCATENATED MODULE: ./lib/main.js
 
