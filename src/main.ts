@@ -22,7 +22,6 @@ async function run(): Promise<void> {
   const is_default_branch = !ref.includes("pull") && (ref.includes("main") || ref.includes("master"));
 
   core.info(`GITHUB CONTEXT REF: ${ref} | IS DEFAULT BRANCH: ${is_default_branch}`);
-  core.info(`github.context.eventName : ${github.context.eventName}`);
 
   const cargoPath: string = await io.which("cargo", true);
 
@@ -83,6 +82,7 @@ async function run(): Promise<void> {
       return compareSnapshots(name, masterCommit, currentPackage, masterSnapshot?.packages?.[name] || null);
     });
     core.info('..creating comment');
+    core.info('SNAPSHOT DIFF LEN: ' + snapShotDiffs.length);
     const comment = createComment(masterCommit, currentSnapshot.commit, versions.toolchain, snapShotDiffs);
     await createOrUpdateComment(versions.toolchain, comment);
   });

@@ -144,7 +144,6 @@ export async function getMasterBranchSnapshot(axios: AxiosInstance, repo_name: s
 }
 
 export async function saveSnapshot(axios: AxiosInstance, repo_name: string, snapshot: Snapshot, ref: string, is_default_branch: boolean): Promise<void> {
-  core.info(`Post data: ${JSON.stringify(snapshot, undefined, 2)}`);
   const key = snapshotKey(repo_name, snapshot.toolchain) + suffix(is_default_branch, ref);
   core.info(`Saving snapshot with key - ${key}`);
   await axios.post(`/set/${key}`, snapshot);
