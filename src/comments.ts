@@ -101,72 +101,7 @@ export function createSnapshotComment(diff: SnapshotDifference): string {
 
   const sizeTable = table(sizeTableRows);
 
-  let treeDiff;
-
-  if (typeof diff.treeDiff === "string") {
-    treeDiff = diff.treeDiff;
-  } else {
-    const treeDiffLines: Array<string> = [];
-
-    diff.treeDiff.forEach((change) => {
-      let prefix = " ";
-      if (change.added) {
-        prefix = "+";
-      } else if (change.removed) {
-        prefix = "-";
-      }
-      const splitLines = change.value.split("\n");
-      treeDiffLines.push(
-        splitLines
-          .slice(0, -1)
-          .map((line) => `${prefix} ${line}`)
-          .join("\n") + "\n"
-      );
-    });
-
-    treeDiff = treeDiffLines.join("") + "\n";
-  }
-
-  let dependencyCountDiff;
-  if (diff.oldDependenciesCount == diff.newDependenciesCount) {
-    dependencyCountDiff = `Count: ${diff.oldDependenciesCount}`;
-  } else {
-    dependencyCountDiff = `- Count: ${diff.oldDependenciesCount}\n`;
-    dependencyCountDiff += `+ Count: ${diff.newDependenciesCount}`;
-  }
-
-  const crateDetailsText =
-    crateTableRows.length == 0
-      ? "No changes to crate sizes"
-      : `
-<details>
-<summary>Size difference per crate</summary>
-<br />
-
-**Note:** The numbers below are not 100% accurate, use them as a rough estimate.
-
-\`\`\`diff
-@@ Breakdown per crate @@
-
-${crateTable}
-\`\`\`
-
-</details>
-`;
-  const treeDiffText = `
-<details>
-<summary>Dependency tree</summary>
-<br />
-
-\`\`\`diff
-@@ Dependency tree @@
-${dependencyCountDiff}
-
-${treeDiff}
-\`\`\`
-
-</details>
-`;
+  const crateDetailsText = getCrateDetailsText(crateTableRows, crateTable);
 
   return `
 \`\`\`diff
@@ -177,8 +112,6 @@ ${sizeTable}
 \`\`\`
 
 ${crateDetailsText}
-
-${treeDiffText}
 `;
 }
 
@@ -187,7 +120,7 @@ export function createComment(masterCommit: string | null, currentCommit: string
     apple: "apple",
     windows: "office",
     arm: "muscle",
-    linux: "cowboy_hat_face", // Why not?
+    linux: "paperclip",
   };
 
   let selectedEmoji = "crab";
@@ -219,7 +152,7 @@ ${comment}
   }
 
   return `
-  :${selectedEmoji}: Cargo bloat for toolchain **${toolchain}** :${selectedEmoji}:
+  :${selectedEmoji}: Cargo bloat for toolchain **${toolchain}**
 
   ${innerComment}
 
@@ -227,10 +160,32 @@ ${comment}
   `;
 }
 
-const validateMsg= (msg: string) => {
+const validateMsg = (msg: string) => {
   // 65536 is the max length of a comment
   if (msg.length > 65536) {
     return msg.slice(0, 65536);
   }
   return msg;
-}
+};
+
+const getCrateDetailsText = (crateTableRows: Array<[string, string]>, crateTable: string) => {
+  const len = crateTableRows.length;
+  if (len == 0) {
+    return "No changes to crate sizes";
+  }
+  return `
+<details>
+<summary>Size difference per crate</summary>
+<br />
+
+**Note:** The numbers below are not 100% accurate, use them as a rough estimate.
+
+\`\`\`diff
+@@ Breakdown per crate @@
+
+${crateTable}
+\`\`\`
+
+</details>
+`;
+};

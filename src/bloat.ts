@@ -19,7 +19,6 @@ export declare interface BloatOutput {
 
 export declare interface Package {
   bloat: BloatOutput;
-  tree: string;
 }
 
 export declare interface CargoPackage {
@@ -38,23 +37,21 @@ export async function getToolchainVersions(): Promise<Versions> {
   const rustc = rustc_version_out.split(" ")[1];
 
   const bloat = (await captureOutput("cargo", ["bloat", "--version"])).trim();
-  const tree = (await captureOutput("cargo", ["tree", "--version"])).split(" ")[1].trim();
 
-  core.debug(`Toolchain: ${toolchain} with rustc ${rustc}, cargo-bloat ${bloat} and cargo-tree ${tree}`);
+  core.debug(`Toolchain: ${toolchain} with rustc ${rustc}, cargo-bloat ${bloat}.`);
 
   return { toolchain, bloat, rustc };
 }
 
 export async function installCargoDependencies(cargoPath: string): Promise<void> {
-  const args = ["install", "cargo-bloat", "cargo-tree", "--debug"];
+  const args = ["install", "cargo-bloat", "--debug"];
   await exec.exec(cargoPath, args);
 }
 
 export async function runCargoBloat(cargoPath: string, packageName: string): Promise<BloatOutput> {
   const noCrates = core.getInput("by_function");
 
-  // const flags = ["--release", "--all-features"];
-  const flags = ["--all-features"];
+  const flags = ["--release", "--all-features"];
 
   if (!noCrates) {
     flags.push("--crates");
@@ -69,14 +66,6 @@ export async function runCargoBloat(cargoPath: string, packageName: string): Pro
   bloatArgs.push("--message-format=json", "-n", "0");
   const output = await captureOutput(cargoPath, bloatArgs);
   return JSON.parse(output);
-}
-
-export async function runCargoTree(cargoPath: string, packageName: string): Promise<string> {
-  let optionalArgs = core.getInput("tree_args");
-  const args = optionalArgs.length > 0 ? ["tree", ...optionalArgs.split(" ")] : ["tree", "--prefix-depth", "--all-features", "--no-dev-dependencies", "-p", packageName];
-  // The first line has the version and other metadata in it. We strip that here:
-  const lines = (await captureOutput(cargoPath, args)).split("\n");
-  return lines.slice(1).join("\n");
 }
 
 export async function getCargoPackages(cargoPath: string): Promise<Array<CargoPackage>> {

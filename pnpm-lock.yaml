@@ -1,4 +1,8 @@
-lockfileVersion: '6.0'
+lockfileVersion: '6.1'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
 
 dependencies:
   '@actions/core':
@@ -28,9 +32,6 @@ dependencies:
   text-table:
     specifier: ^0.2.0
     version: 0.2.0
-  treeify:
-    specifier: ^1.1.0
-    version: 1.1.0
 
 devDependencies:
   '@types/diff':
@@ -51,9 +52,6 @@ devDependencies:
   '@types/text-table':
     specifier: ^0.2.2
     version: 0.2.2
-  '@types/treeify':
-    specifier: ^1.0.0
-    version: 1.0.0
   '@vercel/ncc':
     specifier: ^0.36.1
     version: 0.36.1
@@ -289,10 +287,6 @@ packages:
 
   /@types/text-table@0.2.2:
     resolution: {integrity: sha512-dGoI5Af7To0R2XE8wJuc6vwlavWARsCh3UKJPjWs1YEqGUqfgBI/j/4GX0yf19/DsDPPf0YAXWAp8psNeIehLg==}
-    dev: true
-
-  /@types/treeify@1.0.0:
-    resolution: {integrity: sha512-ONpcZAEYlbPx4EtJwfTyCDQJGUpKf4sEcuySdCVjK5Fj/3vHp5HII1fqa1/+qrsLnpYELCQTfVW/awsGJePoIg==}
     dev: true
 
   /@types/yargs-parser@21.0.0:
@@ -804,11 +798,6 @@ packages:
 
   /tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
-    dev: false
-
-  /treeify@1.1.0:
-    resolution: {integrity: sha512-1m4RA7xVAJrSGrrXGs0L3YTwyvBs2S8PbRHaLZAkFw7JR8oIFwYtysxlBZhYIa7xSyiYJKZ3iGrrk55cGA3i9A==}
-    engines: {node: '>=0.6'}
     dev: false
 
   /tunnel@0.0.6:

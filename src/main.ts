@@ -2,7 +2,7 @@ import axios from "axios";
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 import { compareSnapshots, Snapshot, getMasterBranchSnapshot, saveSnapshot } from "./snapshots";
-import { BloatOutput, CargoPackage, getCargoPackages, getToolchainVersions, installCargoDependencies, Package, runCargoBloat, runCargoTree, Versions } from "./bloat";
+import { BloatOutput, CargoPackage, getCargoPackages, getToolchainVersions, installCargoDependencies, Package, runCargoBloat, Versions } from "./bloat";
 // import {createOrUpdateComment, createSnapshotComment} from './comments'
 import * as io from "@actions/io";
 import { createComment, createOrUpdateComment, createSnapshotComment } from "./comments";
@@ -43,10 +43,7 @@ async function run(): Promise<void> {
     const bloatData = await core.group(`Running cargo-bloat on package ${cargoPackage.name}`, async (): Promise<BloatOutput> => {
       return await runCargoBloat(cargoPath, cargoPackage.name);
     });
-    const treeData = await core.group(`Running cargo-tree on package ${cargoPackage.name}`, async (): Promise<string> => {
-      return await runCargoTree(cargoPath, cargoPackage.name);
-    });
-    packageData[cargoPackage.name] = { bloat: bloatData, tree: treeData };
+    packageData[cargoPackage.name] = { bloat: bloatData };
   }
 
   const currentSnapshot: Snapshot = {
@@ -71,7 +68,7 @@ async function run(): Promise<void> {
   }
 
   // A merge request
-  const masterSnapshot = await core.group("Fetching last build", async (): Promise<Snapshot | null> => {
+  const masterSnapshot = await core.group("Fetching main branch snapshot", async (): Promise<Snapshot | null> => {
     return await getMasterBranchSnapshot(_axios, repo_name, versions.toolchain);
   });
 
@@ -81,8 +78,8 @@ async function run(): Promise<void> {
       const [name, currentPackage] = obj;
       return compareSnapshots(name, masterCommit, currentPackage, masterSnapshot?.packages?.[name] || null);
     });
-    core.info('..creating comment');
-    core.info('SNAPSHOT DIFF LEN: ' + snapShotDiffs.length);
+    core.info("..creating comment");
+    core.info("SNAPSHOT DIFF LEN: " + snapShotDiffs.length);
     const comment = createComment(masterCommit, currentSnapshot.commit, versions.toolchain, snapShotDiffs);
     await createOrUpdateComment(versions.toolchain, comment);
   });
