@@ -18547,7 +18547,7 @@ function createComment(masterCommit, currentCommit, toolchain, snapshots) {
     const compareCommitText = masterCommit == null ? "" : `([Compare with baseline commit](https://github.com/${github.context.repo.owner}/${github.context.repo.repo}/compare/${masterCommit}..${currentCommit}))`;
     let innerComment;
     if (snapshots.length == 1) {
-        innerComment = createSnapshotComment(snapshots[0]);
+        innerComment = `<summary><strong>${snapshots[0].packageName}</strong><br />${createSnapshotComment(snapshots[0])}`;
     }
     else {
         innerComment = snapshots

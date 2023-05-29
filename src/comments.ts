@@ -137,7 +137,7 @@ export function createComment(masterCommit: string | null, currentCommit: string
   let innerComment;
 
   if (snapshots.length == 1) {
-    innerComment = createSnapshotComment(snapshots[0]);
+    innerComment = `<summary><strong>${snapshots[0].packageName}</strong><br />${createSnapshotComment(snapshots[0])}`;
   } else {
     innerComment = snapshots
       .map((snapshot) => {
