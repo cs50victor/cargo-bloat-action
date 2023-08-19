@@ -69,12 +69,12 @@ export async function runCargoBloat(cargoPath: string, packageName: string): Pro
 }
 
 export async function getCargoPackages(cargoPath: string): Promise<Array<CargoPackage>> {
-  const exclude_packages = core.getInput("exclude_packages").split(" ");
+  const included_packages = core.getInput("included_packages").split(" ");
   const args = ["metadata", "--no-deps", "--format-version=1"];
   const output = await captureOutput(cargoPath, args);
   let result = (JSON.parse(output) as CargoMetadata).packages;
-  if (exclude_packages.length > 0) {
-    result = result.filter((pack) => !exclude_packages.includes(pack.name));
+  if (included_packages.length > 0) {
+    result = result.filter((pack) => included_packages.includes(pack.name));
   }
   return result;
 }

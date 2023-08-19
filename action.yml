@@ -17,8 +17,8 @@ inputs:
   by_function:
     description: 'If set, display per-function bloat instead of per-crate bloat.'
     required: false
-  exclude_packages:
-    description: 'Packages to exclude from running cargo bloat onto.'
+  included_packages:
+    description: 'Packages to include when running cargo bloat.'
     required: false
 runs:
   using: 'node16'
